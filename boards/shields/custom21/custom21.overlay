@@ -6,7 +6,6 @@
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix-transform = &default_transform;
-        zephyr,display = &oled;
     };
 
     /*
@@ -83,7 +82,7 @@
      */
     i2c_oled: i2c-oled {
         compatible = "gpio-i2c";
-        status = "okay";
+        status = "disabled";
         #address-cells = <1>;
         #size-cells = <0>;
         sda-gpios = <&pcf8574 6 (GPIO_OPEN_DRAIN | GPIO_PULL_UP)>;
