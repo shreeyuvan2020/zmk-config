@@ -117,3 +117,12 @@
         ngpios = <8>;
     };
 };
+
+/* Free up D6/D7 (UART0) and D8/D9/D10 (SPI2) for matrix row GPIO use. */
+&uart0 {
+    status = "disabled";
+};
+
+&spi2 {
+    status = "disabled";
+};
