@@ -10,9 +10,8 @@
     };
 
     /*
-     * 5x5 grid, 21 keys populated. Matrix coordinates are (row, col).
-     * The bottom row only has one switch (SW41 → ROW5/COL5 in the schematic).
-     * Re-order RC(r,c) entries to match the physical layout you actually want.
+     * 5x5 grid, 21 keys populated. The 21st key sits at (row 5, col 5).
+     * Reorder RC(r,c) entries to match your physical layout.
      */
     default_transform: keymap_transform0 {
         compatible = "zmk,matrix-transform";
@@ -28,13 +27,11 @@
     };
 
     /*
-     * Matrix scan, exactly as drawn:
+     * Matrix per schematic:
      *   COL1..3 on Xiao D1/D2/D3, COL4..5 on PCF8574 P0/P1
      *   ROW1..5 on Xiao D10/D9/D8/D7/D6
-     *   Diodes anode-on-column, cathode-on-row -> diode-direction = "col2row"
-     *
-     * Hardware caveat: PCF8574 can't drive HIGH strongly, so COL4/COL5 need
-     * external ~4.7k pull-ups to 3.3V to be sensed against the row pull-downs.
+     *   Diodes anode-on-col, cathode-on-row -> diode-direction = "col2row"
+     * COL4/COL5 require external 5k pull-ups (already installed) to 3V3.
      */
     kscan0: kscan_0 {
         compatible = "zmk,kscan-gpio-matrix";
@@ -47,8 +44,8 @@
             = <&xiao_d  1 GPIO_ACTIVE_HIGH>   /* COL1 */
             , <&xiao_d  2 GPIO_ACTIVE_HIGH>   /* COL2 */
             , <&xiao_d  3 GPIO_ACTIVE_HIGH>   /* COL3 */
-            , <&pcf8574 0 GPIO_ACTIVE_HIGH>   /* COL4 - needs external pull-up */
-            , <&pcf8574 1 GPIO_ACTIVE_HIGH>   /* COL5 - needs external pull-up */
+            , <&pcf8574 0 GPIO_ACTIVE_HIGH>   /* COL4 */
+            , <&pcf8574 1 GPIO_ACTIVE_HIGH>   /* COL5 */
             ;
 
         row-gpios
@@ -61,10 +58,7 @@
     };
 
     /*
-     * Rotary encoder on PCF8574 P4/P5.
-     * Disabled: needs PCF8574 INT wired to a Xiao GPIO to fire callbacks.
-     * Re-enable by setting both status = "okay" and adding int-gpios on the
-     * pcf8574 node below (sacrifice D0/BAT_PIN, run wire from PCF8574 pin 13).
+     * Encoder is wired in DT but disabled — needs PCF8574 INT bodge to work.
      */
     encoder: encoder {
         compatible = "alps,ec11";
@@ -83,23 +77,24 @@
 
     /*
      * Bit-banged I2C through PCF8574 P6 (SDA) / P7 (SCL) for the OLED.
-     * Every SDA/SCL transition is a real I2C write to the expander, so this
-     * bus tops out around 5-10 kHz. The status screen will refresh in
-     * seconds rather than ms; usable, but ugly.
+     * Very slow: every SDA/SCL transition is a full I2C write to the expander.
+     * Refresh will be measured in seconds. If this fails to init or causes
+     * boot issues, set status = "disabled" here and drop zmk,display above.
      */
     i2c_oled: i2c-oled {
-        compatible = "zephyr,i2c-gpio";
+        compatible = "gpio-i2c";
         status = "okay";
         #address-cells = <1>;
         #size-cells = <0>;
         sda-gpios = <&pcf8574 6 (GPIO_OPEN_DRAIN | GPIO_PULL_UP)>;
         scl-gpios = <&pcf8574 7 (GPIO_OPEN_DRAIN | GPIO_PULL_UP)>;
+        clock-frequency = <10000>;
 
         oled: ssd1306@3c {
             compatible = "solomon,ssd1306fb";
             reg = <0x3c>;
             width = <128>;
-            height = <32>;            /* set 64 for a 0.96" panel */
+            height = <32>;            /* set 64 if you have a 0.96" panel */
             segment-remap;
             com-invdir;
             prechargep = <0x22>;
@@ -121,10 +116,5 @@
         gpio-controller;
         #gpio-cells = <2>;
         ngpios = <8>;
-        /*
-         * Wire PCF8574 INT to a free Xiao GPIO and uncomment this to get
-         * interrupt-driven reads. Required for the encoder to work.
-         * int-gpios = <&xiao_d N (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-         */
     };
 };
