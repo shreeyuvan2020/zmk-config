@@ -6,6 +6,7 @@
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix-transform = &default_transform;
+        zephyr,console = &cdc_acm_uart;
     };
 
     default_transform: keymap_transform0 {
@@ -29,19 +30,19 @@
         debounce-release-ms = <15>;
 
         col-gpios
-            = <&xiao_d  1 GPIO_ACTIVE_HIGH>   /* COL1 */
-            , <&xiao_d  2 GPIO_ACTIVE_HIGH>   /* COL2 */
-            , <&xiao_d  3 GPIO_ACTIVE_HIGH>   /* COL3 */
-            , <&pcf8574 0 GPIO_ACTIVE_HIGH>   /* COL4 */
-            , <&pcf8574 1 GPIO_ACTIVE_HIGH>   /* COL5 */
+            = <&xiao_d  1 GPIO_ACTIVE_HIGH>
+            , <&xiao_d  2 GPIO_ACTIVE_HIGH>
+            , <&xiao_d  3 GPIO_ACTIVE_HIGH>
+            , <&pcf8574 0 GPIO_ACTIVE_HIGH>
+            , <&pcf8574 1 GPIO_ACTIVE_HIGH>
             ;
 
         row-gpios
-            = <&xiao_d 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>   /* ROW1 */
-            , <&xiao_d  9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>   /* ROW2 */
-            , <&xiao_d  8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>   /* ROW3 */
-            , <&xiao_d  7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>   /* ROW4 */
-            , <&xiao_d  6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>   /* ROW5 */
+            = <&xiao_d 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            , <&xiao_d  9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            , <&xiao_d  8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            , <&xiao_d  7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            , <&xiao_d  6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
             ;
     };
 };
@@ -65,4 +66,10 @@
 
 &spi2 {
     status = "disabled";
+};
+
+&zephyr_udc0 {
+    cdc_acm_uart: cdc_acm_uart {
+        compatible = "zephyr,cdc-acm-uart";
+    };
 };
