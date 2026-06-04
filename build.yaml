@@ -21,3 +21,5 @@
 include:
   - board: seeeduino_xiao_ble
     shield: custom21
+  - board: seeeduino_xiao_ble
+    shield: settings_reset
