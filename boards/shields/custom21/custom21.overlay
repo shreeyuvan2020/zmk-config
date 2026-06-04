@@ -1,5 +1,6 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/i2c/i2c.h>
 
 / {
     chosen {
@@ -7,17 +8,16 @@
         zmk,matrix-transform = &default_transform;
     };
 
-    /* Isolation build: 15 keys, COL1..3 only, no PCF8574 in the picture. */
     default_transform: keymap_transform0 {
         compatible = "zmk,matrix-transform";
-        columns = <3>;
+        columns = <5>;
         rows = <5>;
         map = <
-            RC(0,0) RC(0,1) RC(0,2)
-            RC(1,0) RC(1,1) RC(1,2)
-            RC(2,0) RC(2,1) RC(2,2)
-            RC(3,0) RC(3,1) RC(3,2)
-            RC(4,0) RC(4,1) RC(4,2)
+            RC(0,0) RC(0,1) RC(0,2) RC(0,3) RC(0,4)
+            RC(1,0) RC(1,1) RC(1,2) RC(1,3) RC(1,4)
+            RC(2,0) RC(2,1) RC(2,2) RC(2,3) RC(2,4)
+            RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4)
+                                            RC(4,4)
         >;
     };
 
@@ -25,13 +25,15 @@
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "col2row";
         wakeup-source;
-        debounce-press-ms = <5>;
-        debounce-release-ms = <5>;
+        debounce-press-ms = <15>;
+        debounce-release-ms = <15>;
 
         col-gpios
-            = <&xiao_d 1 GPIO_ACTIVE_HIGH>   /* COL1 */
-            , <&xiao_d 2 GPIO_ACTIVE_HIGH>   /* COL2 */
-            , <&xiao_d 3 GPIO_ACTIVE_HIGH>   /* COL3 */
+            = <&xiao_d  1 GPIO_ACTIVE_HIGH>   /* COL1 */
+            , <&xiao_d  2 GPIO_ACTIVE_HIGH>   /* COL2 */
+            , <&xiao_d  3 GPIO_ACTIVE_HIGH>   /* COL3 */
+            , <&pcf8574 0 GPIO_ACTIVE_HIGH>   /* COL4 */
+            , <&pcf8574 1 GPIO_ACTIVE_HIGH>   /* COL5 */
             ;
 
         row-gpios
@@ -44,7 +46,19 @@
     };
 };
 
-/* Free up D6/D7 (UART0) and D8/D9/D10 (SPI2) for matrix row GPIO use. */
+&xiao_i2c {
+    status = "okay";
+    clock-frequency = <I2C_BITRATE_FAST>;
+
+    pcf8574: gpio@38 {
+        compatible = "nxp,pcf8574";
+        reg = <0x38>;
+        gpio-controller;
+        #gpio-cells = <2>;
+        ngpios = <8>;
+    };
+};
+
 &uart0 {
     status = "disabled";
 };
